@@ -107,7 +107,8 @@ bun run db:migrate
 ```bash
 node --env-file=.env ./scripts/db/mark-drizzle-baseline.mjs
 ```
-- In Docker Compose, run migrations explicitly with the normal app image via `docker compose run --rm sake bun run db:migrate`.
+- Both root Compose files include a one-shot `sake-migrator` service, so migrations are applied automatically on startup.
+- For direct app runs without Docker, run `bun run db:migrate` before first boot and after schema changes.
 
 ## Common pitfall to avoid
 
