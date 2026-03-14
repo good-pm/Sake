@@ -8,9 +8,9 @@ services:
     container_name: sake-migrator
     command: ["bun", "run", "db:migrate"]
     env_file:
-      - ./sake/.env
-    networks:
-      - caddy_net
+      - ./sake/.env.docker.managed
+    # networks:
+    #   - caddy_net
     restart: "no"
 
   sake:
@@ -19,10 +19,10 @@ services:
       dockerfile: dockerfile
       target: runtime
       args:
-        PUBLIC_WEBAPP_VERSION: ${PUBLIC_WEBAPP_VERSION:-dev-local}
-        PUBLIC_WEBAPP_GIT_TAG: ${PUBLIC_WEBAPP_GIT_TAG:-}
-        PUBLIC_WEBAPP_COMMIT_SHA: ${PUBLIC_WEBAPP_COMMIT_SHA:-}
-        PUBLIC_WEBAPP_RELEASED_AT: ${PUBLIC_WEBAPP_RELEASED_AT:-}
+        PUBLIC_WEBAPP_VERSION: dev-local
+        PUBLIC_WEBAPP_GIT_TAG: ""
+        PUBLIC_WEBAPP_COMMIT_SHA: ""
+        PUBLIC_WEBAPP_RELEASED_AT: ""
     image: sake
     container_name: sake
     depends_on:
@@ -31,18 +31,19 @@ services:
     ports:
       - "5173:3000"
     environment:
-      - PUBLIC_ZDL_URL=http://z-dl:6126
-      - PUBLIC_WEBAPP_VERSION=${PUBLIC_WEBAPP_VERSION:-dev-local}
-      - PUBLIC_WEBAPP_GIT_TAG=${PUBLIC_WEBAPP_GIT_TAG:-}
-      - PUBLIC_WEBAPP_COMMIT_SHA=${PUBLIC_WEBAPP_COMMIT_SHA:-}
-      - PUBLIC_WEBAPP_RELEASED_AT=${PUBLIC_WEBAPP_RELEASED_AT:-}
+      PUBLIC_ZDL_URL: http://z-dl:6126
+      PUBLIC_WEBAPP_VERSION: dev-local
+      PUBLIC_WEBAPP_GIT_TAG: ""
+      PUBLIC_WEBAPP_COMMIT_SHA: ""
+      PUBLIC_WEBAPP_RELEASED_AT: ""
     env_file:
-      - ./sake/.env
+      - ./sake/.env.docker.managed
     volumes:
       - ./koreaderPlugins/sake.koplugin:/app/koreaderPlugins/sake.koplugin:ro
-    networks:
-      - caddy_net
+    # networks:
+    #   - caddy_net
 
-networks:
-  caddy_net:
-    external: true
+# If a reverse proxy like caddy is used
+# networks:
+#   caddy_net:
+#     external: true

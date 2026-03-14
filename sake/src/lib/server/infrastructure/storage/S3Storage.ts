@@ -6,26 +6,33 @@ import {
 	DeleteObjectCommand
 } from '@aws-sdk/client-s3';
 import type { StoragePort } from '$lib/server/application/ports/StoragePort';
-import { Readable } from 'stream';
+import type { Readable } from 'stream';
 import { getS3Config } from '$lib/server/config/infrastructure';
 
 export class S3Storage implements StoragePort {
-	private readonly s3: S3Client;
-	private readonly bucket: string;
+	private s3: S3Client | null = null;
+	private bucket: string | null = null;
 
-	constructor() {
-		const config = getS3Config();
-		this.bucket = config.bucket;
+	private getClient(): { s3: S3Client; bucket: string } {
+		if (!this.s3 || !this.bucket) {
+			const config = getS3Config();
+			this.bucket = config.bucket;
 
-		this.s3 = new S3Client({
-			region: config.region,
-			endpoint: config.endpoint,
-			forcePathStyle: config.forcePathStyle,
-			credentials: {
-				accessKeyId: config.accessKeyId,
-				secretAccessKey: config.secretAccessKey
-			}
-		});
+			this.s3 = new S3Client({
+				region: config.region,
+				endpoint: config.endpoint,
+				forcePathStyle: config.forcePathStyle,
+				credentials: {
+					accessKeyId: config.accessKeyId,
+					secretAccessKey: config.secretAccessKey
+				}
+			});
+		}
+
+		return {
+			s3: this.s3,
+			bucket: this.bucket
+		};
 	}
 
 	async put(
@@ -33,9 +40,10 @@ export class S3Storage implements StoragePort {
 		body: Buffer | Uint8Array | NodeJS.ReadableStream,
 		contentType?: string
 	): Promise<void> {
-		await this.s3.send(
+		const { s3, bucket } = this.getClient();
+		await s3.send(
 			new PutObjectCommand({
-				Bucket: this.bucket,
+				Bucket: bucket,
 				Key: key,
 				// @ts-ignore AWS SDK Body union is wider at runtime than TS infers here
 				Body: body,
@@ -45,9 +53,10 @@ export class S3Storage implements StoragePort {
 	}
 
 	async get(key: string): Promise<Buffer> {
-		const response = await this.s3.send(
+		const { s3, bucket } = this.getClient();
+		const response = await s3.send(
 			new GetObjectCommand({
-				Bucket: this.bucket,
+				Bucket: bucket,
 				Key: key
 			})
 		);
@@ -67,18 +76,20 @@ export class S3Storage implements StoragePort {
 	}
 
 	async delete(key: string): Promise<void> {
-		await this.s3.send(
+		const { s3, bucket } = this.getClient();
+		await s3.send(
 			new DeleteObjectCommand({
-				Bucket: this.bucket,
+				Bucket: bucket,
 				Key: key
 			})
 		);
 	}
 
 	async list(prefix: string): Promise<{ key: string; size: number; lastModified?: Date }[]> {
-		const res = await this.s3.send(
+		const { s3, bucket } = this.getClient();
+		const res = await s3.send(
 			new ListObjectsV2Command({
-				Bucket: this.bucket,
+				Bucket: bucket,
 				Prefix: prefix
 			})
 		);
