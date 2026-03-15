@@ -141,15 +141,25 @@ Then open `http://localhost:5173`.
 ## How to use the KOReader plugin
 
 1. Install the plugin as any other (by moving it into the plugin folder)
+
 2. Go to settings -> more tools
+
 <img src="./docs/img/SettingsMoreTools.png" alt="KOReader Settings" width="350">
+
 3. Select "Sake"
+
 <img src="./docs/img/Sake.png" alt="KOReader Settings" width="350">
+
 <img src="./docs/img/SakeMenu.png" alt="KOReader Settings" width="350">
+
 4. Set the public URL where you host the webapp (eg. sake.yourdomain.com)
+
 5. Set the username and passowrd (the same login data as the webapp)
+
 6. Press "Login and fetch device key". This will fetch an api key, store it, and clear the password from your device
+
 7. Press Sync books to download all the books in your sake library
+
 8. Enjoy!
 
 ## Tips
